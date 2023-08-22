@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { AppContainer, AuthenticationContainer } from './';
-import { AuthContext } from '../providers/auth';
+import { useAuth } from '../providers/auth';
 import { NavigationContainer } from '@react-navigation/native';
 
 function StackContainer() {
-    const { authState, getAccessToken } = useContext(AuthContext);
+    const { getAccessToken } = useAuth();
     return (
         <NavigationContainer>
             {/* find out why getAccessToken() works and not authState */}

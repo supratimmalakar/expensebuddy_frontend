@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -10,15 +10,14 @@ import {
     Image,
 } from 'react-native';
 import axios from 'axios';
-import { AuthContext } from '../providers/auth';
-
+import { useAuth } from '../providers/auth';
 
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isEmailValid, setIsEmailValid] = useState(true);
     const [isPasswordValid, setIsPasswordValid] = useState(true);
-    const { login } = useContext(AuthContext);
+    const { login, loginLoading } = useAuth();
 
     const handleSubmit = () => {
         let emailReg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
