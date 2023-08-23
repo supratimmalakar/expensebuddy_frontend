@@ -21,18 +21,14 @@ const Login = ({ navigation }) => {
 
     const handleSubmit = () => {
         let emailReg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
-        let passwordReg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
         let emailValid = emailReg.test(email);
-        let passwordValid = passwordReg.test(password);
-        if (emailValid && passwordValid) {
+        if (emailValid) {
             login(email, password);
         }
         else {
             setIsEmailValid(emailValid);
-            setIsPasswordValid(passwordValid);
             setTimeout(() => {
                 setIsEmailValid(true);
-                setIsPasswordValid(true);
             }, 4000);
         }
     };
@@ -64,7 +60,6 @@ const Login = ({ navigation }) => {
                             borderColor: isPasswordValid ? 'gray' : 'red',
                         }}
                         placeholder="Password" />
-                    {!isPasswordValid && <Text style={styles.errorText}>Please enter a valid password</Text>}
                     <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={handleSubmit}>
                         <Text style={styles.text}>Login</Text>
                     </TouchableOpacity>

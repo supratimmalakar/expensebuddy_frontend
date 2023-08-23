@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage'
 import { View, Text } from 'react-native';
+import Snackbar from 'react-native-snackbar';
 
 const AuthContext = createContext(null);
 const { Provider } = AuthContext;
@@ -59,12 +60,25 @@ const AuthProvider = ({ children }) => {
                         setLoginLoading(false)
                     }, (err) => {
                         console.log(err);
+                        
                         setAuthStateLoading(false)
                     });
             })
             .catch(error => {
                 console.log(error);
-                setLoginLoading(false)
+                if (error.response.status === 404) {
+                    Snackbar.show({
+                        text: 'Email or password or both are incorrect',
+                        duration: Snackbar.LENGTH_SHORT,
+                    });
+                }
+                else {
+                    Snackbar.show({
+                        text: 'There was a error',
+                        duration: Snackbar.LENGTH_SHORT,
+                    });
+                }
+                setLoginLoading(false);
             });
     };
 

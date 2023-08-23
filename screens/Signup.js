@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     StyleSheet,
     Text,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import Snackbar from 'react-native-snackbar';
+import PhoneInput from "react-native-phone-number-input";
 
 
 const Signup = ({ navigation }) => {
@@ -17,24 +18,40 @@ const Signup = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [phoneNo, setPhoneNo] = useState('');
     const [isEmailValid, setIsEmailValid] = useState(true);
     const [isPasswordValid, setIsPasswordValid] = useState(true);
     const [isFirstNameValid, setIsFirstNameValid] = useState(true);
+    const [isPhoneValid, setIsPhoneValid] = useState(true);
     const [isLastNameValid, setIsLastNameValid] = useState(true);
+
+    const isPhoneValidFn = (phone) => {
+        var allNumericDigits = true;
+        for (let i = 0; i < phone.length; i++) {
+            if (!(/^\d$/.test(phone[i]))) {
+                allNumericDigits = false;
+                break;
+            }
+        }
+        return allNumericDigits && phone.length === 10;
+    }
     const handleSubmit = () => {
         let emailReg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
         let passwordReg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
         let nameReg = /^[a-z ,.'-]+$/;
         let emailValid = emailReg.test(email);
         let passwordValid = passwordReg.test(password);
+        let phoneNoValid = isPhoneValidFn(phoneNo.trim().slice(3, phoneNo.length));
+
         let fNameValid = nameReg.test(firstName.toLowerCase());
         let lNameValid = nameReg.test(lastName.toLowerCase());
-        if (emailValid && passwordValid && fNameValid && lNameValid) {
+        if (emailValid && passwordValid && fNameValid && lNameValid && phoneNoValid) {
             axios.post('http://localhost:8000/api/register/', {
                 email: email,
                 password: password,
                 first_name: firstName.trim(),
                 last_name: lastName.trim(),
+                phone_number : phoneNo.trim(),
             })
                 .then(response => {
                     console.log(response);
@@ -44,18 +61,48 @@ const Signup = ({ navigation }) => {
                     });
                     navigation.navigate('Login');
                 })
-                .catch(error => console.log(error));
+                .catch(error => {
+                    console.log(error);
+                    const emailExists = error.response.data.hasOwnProperty('email') ? error.response.data.email[0]?.code === 'unique' : false;
+                    const phoneExists = error.response.data.hasOwnProperty('phone_number') ? error.response.data.phone_number[0]?.code === 'unique' : false;
+                    if (emailExists && phoneExists) {
+                        Snackbar.show({
+                            text: 'Email and phone number already exists',
+                            duration: Snackbar.LENGTH_SHORT,
+                        });
+                    }
+                    else if (emailExists) {
+                        Snackbar.show({
+                            text: 'Email already exists',
+                            duration: Snackbar.LENGTH_SHORT,
+                        });
+                    }
+                    else if (phoneExists) {
+                        Snackbar.show({
+                            text: 'Phone number already exists',
+                            duration: Snackbar.LENGTH_SHORT,
+                        });
+                    }
+                    else {
+                        Snackbar.show({
+                            text: 'There was an error',
+                            duration: Snackbar.LENGTH_SHORT,
+                        });
+                    }
+                });
         }
         else {
             setIsEmailValid(emailValid);
             setIsPasswordValid(passwordValid);
             setIsFirstNameValid(fNameValid);
             setIsLastNameValid(lNameValid);
+            setIsPhoneValid(phoneNoValid);
             setTimeout(() => {
                 setIsEmailValid(true);
                 setIsPasswordValid(true);
                 setIsFirstNameValid(true);
                 setIsLastNameValid(true);
+                setIsPhoneValid(true);
             }, 4000);
         }
     };
@@ -108,6 +155,21 @@ const Signup = ({ navigation }) => {
                         }}
                         placeholder="Password" />
                     {!isPasswordValid && <Text style={styles.errorText}>Please enter a valid password</Text>}
+                    <PhoneInput
+                        // ref={phoneInput}
+                        value={phoneNo}
+                        containerStyle={styles.phoneContainer}
+                        textContainerStyle={styles.textContainer}
+                        defaultValue={phoneNo}
+                        defaultCode="IN"
+                        onChangeFormattedText={(text) => {
+                            setPhoneNo(text);
+                            console.log(text);
+                        }}
+                        textInputStyle={{ color: 'black' }}
+                        codeTextStyle={styles.codeTextStyle}
+                    />
+                    {!isPhoneValid && <Text style={styles.errorText}>Please enter a valid phone number</Text>}
                     <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={handleSubmit}>
                         <Text style={styles.text}>Signup</Text>
                     </TouchableOpacity>
@@ -126,6 +188,21 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+    textContainer: {
+        backgroundColor: 'transparent',
+        color: 'black',
+        paddingVertical: 0,
+    },
+    // codeTextStyle : {
+    //     paddingLeft : 10,
+    // },
+    phoneContainer: {
+        height: 50,
+        backgroundColor: 'transparent',
+        borderColor: 'gray',
+        borderBottomWidth: 1,
+        marginTop: 20,
+    },
     input: {
         height: 50,
         width: screenWidth - 60,
@@ -133,7 +210,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderRadius: 10,
         padding: 10,
-        marginTop: 20
+        marginTop: 20,
     },
     errorText: {
         textAlign: 'left',
