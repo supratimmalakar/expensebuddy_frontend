@@ -1,10 +1,12 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { Modal, TextInput, StyleSheet, Dimensions, View, Pressable, FlatList, Text } from 'react-native';
 import { useAuth } from '../providers/auth';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import ContactDp from './ContactDp';
-import { RadioButton } from 'react-native-paper';
 import { theme } from '../utils';
+import { RadioButton } from 'react-native-radio-buttons-group';
+import ContactTag from './ContactTag';
+import { useSelector, useDispatch } from 'react-redux';
+import { addContact, removeContact } from '../redux/expenseSlice';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -13,30 +15,110 @@ function SearchContactsModal({ visible, onClose }) {
     const { user } = authState;
     const [regResults, setRegResults] = useState([]);
     const [unregResults, setUnregResults] = useState([]);
+    const [searchText, setSearchText] = useState('');
+    const dispatch = useDispatch();
+    const {contacts : selectedContacts} = useSelector(state => state.expense);
+
+    const searchFilterFunction = (text, data, setData) => {
+        if (text) {
+            const newData = data.filter(item => {
+                const itemData = item.contact_name ? item.contact_name.toUpperCase() : ''.toUpperCase();
+                const textData = text.toUpperCase();
+                if (text.length <= 2 && text.length > 0) {
+                    return itemData.indexOf(textData) === 0;
+                }
+                else {
+                    return itemData.indexOf(textData) > -1;
+                }
+            });
+            setData(newData);
+        } else {
+            setData([]);
+        }
+    };
     return (
         <Modal visible={visible}>
+            <View style={styles.headerBar}>
+                <Text style={styles.headerText}>Contacts</Text>
+                <Pressable onPress={onClose}>
+                    <Text style={styles.saveBtn}>Save</Text>
+                </Pressable>
+            </View>
             <View style={styles.headerContainer}>
-                <TextInput onChangeText={(text) => {
-                    setRegResults([...user.buddies.filter(buddy => buddy.contact_name.toLowerCase().includes(text.toLowerCase()))]);
-                    setUnregResults([...unregisteredContacts.filter(contact => contact.contact_name.toLowerCase().includes(text.toLowerCase()))])
+                <TextInput value={searchText} onChangeText={(text) => {
+                    setSearchText(text);
+                    searchFilterFunction(text, user.buddies, setRegResults);
+                    searchFilterFunction(text, unregisteredContacts, setUnregResults);
                 }} placeholder="Search Contacts" style={styles.input} />
-                <Pressable style={styles.closeBtn} onPress={onClose}><Ionicons color="rgba(0,0,0,0.7)" name="close-sharp" size={30} /></Pressable>
             </View>
             <View style={styles.contactListContainer}>
+                {selectedContacts.length > 0 &&
+                    <View style={styles.contactTagsContainer}>
+                        {selectedContacts.map((contact, index) => {
+                            return (
+                                <ContactTag key={index} contact={contact} />
+                            );
+                        })}
+                    </View>}
                 <FlatList
-                    data={unregResults}
-                    ItemSeparatorComponent={() => <View style={{backgroundColor : 'rgba(0,0,0,0.1)', marginHorizontal : 10 ,width : screenWidth - 20, height : 1}}/>}
-                    renderItem={({ item }) => {
+                    data={regResults}
+                    ItemSeparatorComponent={() => <View style={{ backgroundColor: 'rgba(0,0,0,0.1)', marginHorizontal: 10, width: screenWidth - 20, height: 1 }} />}
+                    renderItem={({ item, index }) => {
+                        const isSelected = selectedContacts.some(contact => contact.phone_number === item.phone_number);
                         return (
                             <View style={styles.contactCard}>
-                                <View style={{flexDirection : 'row', alignItems :'center', gap : 15}}>
-                                    <ContactDp title={item.contact_name} />
-                                    <Text style={styles.contactText}>{item.contact_name}</Text>
+                                <View style={{ flex: 1 }}>
+                                    <ContactDp contact={item} />
                                 </View>
-                                <RadioButton color={theme.primary} />
+                                <Text style={styles.contactText}>{item.contact_name}</Text>
+                                <RadioButton
+                                    id={index}
+                                    selected={isSelected}
+                                    color={theme.primary}
+                                    onPress={(id) => {
+                                        if (!isSelected) {
+                                            dispatch(addContact(item));
+                                        }
+                                        else {
+                                            dispatch(removeContact(item));
+                                        }
+                                    }} />
                             </View>
                         );
                     }} />
+                {unregResults.length > 0 &&
+                    <>
+                        <Text style={{ fontFamily: 'Montserrat_600', paddingHorizontal: 10, marginVertical: 10 }}>From your contacts</Text>
+                        <FlatList
+                            data={unregResults}
+                            ItemSeparatorComponent={() => <View style={{ backgroundColor: 'rgba(0,0,0,0.1)', marginHorizontal: 10, width: screenWidth - 20, height: 1 }} />}
+                            renderItem={({ item, index }) => {
+                                const isSelected = selectedContacts.some(contact => contact.phone_number === item.phone_number);
+                                return (
+                                    <View style={styles.contactCard}>
+                                        <View style={{ flex: 1 }}>
+                                            <ContactDp contact={item} />
+                                        </View>
+                                        <View style={{ flex: 5 }}>
+                                            <Text style={{ fontFamily: 'Montserrat_600', }}>{item.contact_name}</Text>
+                                            <Text style={{ fontFamily: 'Montserrat_400', }}>{item.phone_number}</Text>
+                                        </View>
+                                        <RadioButton
+                                            id={index}
+                                            selected={isSelected}
+                                            color={theme.primary}
+                                            onPress={(id) => {
+                                                if (!isSelected) {
+                                                    dispatch(addContact(item));
+                                                }
+                                                else {
+                                                    dispatch(removeContact(item))
+                                                }
+                                            }} />
+                                    </View>
+                                );
+                            }} />
+                    </>}
             </View>
         </Modal>
     );
@@ -49,19 +131,42 @@ const styles = StyleSheet.create({
     // closeBtn : {
     //     width: 30
     // },
-    contactListContainer : {
-        marginTop : 20,
+    headerBar: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        height: 50,
+        alignItems: 'center',
+        paddingHorizontal: 10,
     },
-    contactText : {
-        fontFamily : 'Montserrat_500',
+    headerText: {
+        fontFamily: 'Montserrat_600',
+    },
+    saveBtn: {
+        fontFamily: 'Montserrat_500',
+        color: theme.primary
+    },
+    contactTagsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+        paddingHorizontal: 10,
+        paddingBottom: 15,
+    },
+    contactListContainer: {
+        marginTop: 20,
+    },
+    contactText: {
+        fontFamily: 'Montserrat_500',
+        flex: 5,
     },
     contactCard: {
-        marginVertical : 5,
+        marginVertical: 5,
         width: screenWidth,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent : 'space-between',
-        paddingHorizontal : 10
+        justifyContent: 'space-between',
+        paddingHorizontal: 10
     },
     headerContainer: {
         width: screenWidth,
@@ -69,16 +174,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 10,
         justifyContent: 'space-between',
-        paddingTop: 10,
     },
     input: {
         height: 50,
-        width: screenWidth - 60,
+        width: screenWidth - 20,
         borderWidth: 0,
         borderBottomWidth: 1,
         padding: 10,
         paddingBottom: 5,
-        fontFamily: 'Monteserrat_500',
+        fontFamily: 'Montserrat_500',
         borderColor: 'gray',
     },
 })

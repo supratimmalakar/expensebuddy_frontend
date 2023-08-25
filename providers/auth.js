@@ -18,7 +18,7 @@ const useAuth = () => {
 };
 
 const AuthProvider = ({ children }) => {
-    const [unregisteredContacts, setUnregisteredContacts] = useState([])
+    const [unregisteredContacts, setUnregisteredContacts] = useState([]);
     const [authState, setAuthState] = useState({
         accessToken: null,
         authenticated: null,
@@ -36,7 +36,7 @@ const AuthProvider = ({ children }) => {
         })
         .catch(error => {
             console.log(error);
-        })
+        });
     }, [authState.accessToken]);
 
     const loadStorageData = async () => {
@@ -46,7 +46,7 @@ const AuthProvider = ({ children }) => {
             setAuthState({ ...storedAuthState });
         }
         catch (error) {
-            console.log(error)
+            console.log(error);
         }
         finally {
             setAuthStateLoading(false);
@@ -78,14 +78,17 @@ const AuthProvider = ({ children }) => {
             const unregisteredContactsCache = parsedContacts.filter(contact => {
                 const isContactRegistered = response.data.buddies.some(buddy => (buddy.phone_number === contact.phone_number));
                 return !isContactRegistered;
-            });
+            }).map(contact => ({
+                ...contact,
+                unregistered : true,
+            }));
             setUnregisteredContacts([...unregisteredContactsCache]);
             setAuthState(prev => {
                 return {
                     ...prev,
                     user : {...response.data},
-                }
-            })
+                };
+            });
         }
         catch (error) {
             console.log(error);
@@ -109,10 +112,10 @@ const AuthProvider = ({ children }) => {
                 RNSecureStorage.set(AUTH_STATE_KEY, JSON.stringify(loginAPIData), {accessible : ACCESSIBLE.ALWAYS})
                     .then((res) => {
                         console.log(res);
-                        setLoginLoading(false)
+                        setLoginLoading(false);
                     }, (err) => {
                         console.log(err);
-                        setAuthStateLoading(false)
+                        setAuthStateLoading(false);
                     });
             })
             .catch(error => {

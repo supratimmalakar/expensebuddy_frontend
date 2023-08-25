@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -13,34 +13,40 @@ import {
 } from 'react-native';
 import { useAuth } from '../../providers/auth';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { SearchContactsModal } from '../../components';
+import { ContactTag, SearchContactsModal, AddExpenseForm } from '../../components';
 import { theme } from '../../utils';
+import { useSelector } from 'react-redux';
 
 
 const AddExpense = ({ navigation }) => {
     const [contactSearchModalVisible, setContactSearchModalVisible] = useState(false)
     const { authState } = useAuth();
+    const { contacts: selectedContacts } = useSelector(state => state.expense)
     console.log(authState);
     return (
         <View style={styles.container}>
             <ImageBackground style={{ flex: 1, width: Dimensions.get('window').width }} source={require('../../assets/layered-waves-2.png')}>
                 <View style={styles.subContainer}>
                     <View style={styles.headerBar}>
-                        <Pressable>
-                            <Ionicons color="rgba(0,0,0,0.7)" name="close-sharp" size={25}/>
-                        </Pressable>
+                        {/* <Pressable style={{opacity : 0}}>
+                            <Ionicons color="rgba(0,0,0,0.7)" name="close-sharp" size={25} />
+                        </Pressable> */}
                         <Text style={styles.headerText}>Add an expense</Text>
                         <Pressable>
                             <Text style={styles.saveBtn}>Save</Text>
                         </Pressable>
                     </View>
                     <View style={styles.addPeopleBar}>
-                        <Text style={styles.addPeopleBarText}>With <Text style={{fontFamily : 'Montserrat_700'}}>you</Text> and:  </Text>
-                        <TouchableOpacity onPress={() => setContactSearchModalVisible(true)} activeOpacity={0.4} style={styles.addPeopleBtn}><Image style={{width : 35, height : 35}} source={require('../../assets/add-circle.png')}/></TouchableOpacity>
-                        <SearchContactsModal visible={contactSearchModalVisible} onClose={() => setContactSearchModalVisible(false)}/>
+                        <Text style={styles.addPeopleBarText}>With <Text style={{ fontFamily: 'Montserrat_700' }}>you</Text> and:  </Text>
+                        {selectedContacts.length > 0 && selectedContacts.map((contact, index) => <ContactTag key={index} contact={contact} />)}
+                        <TouchableOpacity onPress={() => setContactSearchModalVisible(true)} activeOpacity={0.4} style={styles.addPeopleBtn}><Image style={{ width: 35, height: 35 }} source={require('../../assets/add-circle.png')} /></TouchableOpacity>
+                    </View>
+                    <View style={{flex : 1, justifyContent : 'flex-start', alignItems : 'center', marginTop : 100}}>
+                        <AddExpenseForm />
                     </View>
                 </View>
             </ImageBackground>
+            <SearchContactsModal visible={contactSearchModalVisible} onClose={() => setContactSearchModalVisible(false)} />
         </View>
     );
 };
@@ -93,32 +99,37 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: 'rgba(0,0,0,0.6)',
     },
-    headerBar : {
+    headerBar: {
         width: '100%',
-        flexDirection : 'row',
-        justifyContent : 'space-between',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         height: 50,
-        alignItems : 'center',
-        paddingHorizontal : 10,
+        alignItems: 'center',
+        paddingHorizontal: 10,
     },
-    headerText : {
-        fontFamily : 'Montserrat_600',
+    headerText: {
+        fontFamily: 'Montserrat_600',
     },
-    saveBtn : {
+    saveBtn: {
         fontFamily: 'Montserrat_500',
     },
-    addPeopleBar : {
+    addPeopleBar: {
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        alignItems : 'center',
-        flexWrap : 'wrap',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        paddingHorizontal: 10,
+        gap: 5,
+        borderBottomWidth: 1,
+        paddingBottom: 6,
+        borderColor: 'rgba(0,0,0,0.08)',
     },
     addPeopleBarText: {
         fontFamily: 'Montserrat_400',
-        
+
     },
-    addPeopleBtn : {
+    addPeopleBtn: {
         backgroundImage: 'linear-gradient(to bottom, #ff0000, #0000ff)',
     }
 });
