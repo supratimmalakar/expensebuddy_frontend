@@ -12,11 +12,11 @@ import {
     Dimensions
 } from 'react-native';
 import { useAuth } from '../providers/auth';
+import { theme } from '../utils';
 
 
 const Buddies = ({ navigation }) => {
     const { authState } = useAuth();
-    console.log(authState);
     return (
         <View style={styles.container}>
             <ImageBackground style={{ flex: 1, width: Dimensions.get('window').width }} source={require('../assets/layered-waves-2.png')}>
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     button: {
-        backgroundColor: "#5170ff",
+        backgroundColor: theme.primary,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,

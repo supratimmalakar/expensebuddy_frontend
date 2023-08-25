@@ -11,6 +11,8 @@ import {
 import axios from 'axios';
 import Snackbar from 'react-native-snackbar';
 import PhoneInput from "react-native-phone-number-input";
+import { BASE_URL } from '../App';
+import { theme } from '../utils';
 
 
 const Signup = ({ navigation }) => {
@@ -46,7 +48,7 @@ const Signup = ({ navigation }) => {
         let fNameValid = nameReg.test(firstName.toLowerCase());
         let lNameValid = nameReg.test(lastName.toLowerCase());
         if (emailValid && passwordValid && fNameValid && lNameValid && phoneNoValid) {
-            axios.post('http://localhost:8000/api/register/', {
+            axios.post(`${BASE_URL}/api/register/`, {
                 email: email,
                 password: password,
                 first_name: firstName.trim(),
@@ -233,7 +235,7 @@ const styles = StyleSheet.create({
         color: 'rgba(0,0,0,0.6)',
     },
     button: {
-        backgroundColor: "#5170ff",
+        backgroundColor: theme.primary,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,

@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../providers/auth';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddExpenseScreen } from './AddExpenseScreens';
+import { theme } from '../utils';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     button: {
-        backgroundColor: "#5170ff",
+        backgroundColor: theme.primary,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,

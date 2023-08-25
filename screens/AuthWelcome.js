@@ -11,6 +11,8 @@ import {
     ImageBackground,
     Dimensions
 } from 'react-native';
+import { theme } from '../utils';
+
 
 
 const AuthWelcome = ({ navigation }) => {
@@ -21,10 +23,16 @@ const AuthWelcome = ({ navigation }) => {
                 <View style={styles.subContainer}>
                     <Image style={{ width: 150, height: 150 }} source={require('../assets/logo.png')} />
                     <Text style={styles.header}>ExpenseBuddy</Text>
-                    <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={() => { navigation.navigate('Login') }}>
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        style={styles.button}
+                        onPress={() => navigation.navigate('Login')}>
                         <Text style={styles.text}>Login</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={() => { navigation.navigate('Signup') }}>
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        style={styles.button}
+                        onPress={() => navigation.navigate('Signup')}>
                         <Text style={styles.text}>Signup</Text>
                     </TouchableOpacity>
                 </View>
@@ -45,7 +53,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     button: {
-        backgroundColor: "#5170ff",
+        backgroundColor: theme.primary,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,

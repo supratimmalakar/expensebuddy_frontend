@@ -12,6 +12,7 @@ import {
     Dimensions
 } from 'react-native';
 import { useAuth } from '../providers/auth';
+import { theme } from '../utils';
 
 
 const Groups = ({ navigation }) => {
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     button: {
-        backgroundColor: "#5170ff",
+        backgroundColor: theme.primary,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,

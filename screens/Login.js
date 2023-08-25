@@ -11,6 +11,10 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../providers/auth';
+import RNSecureStorage from 'rn-secure-storage';
+import { CONTACTS_PERM_GRANTED_KEY } from '../App';
+import Snackbar from 'react-native-snackbar';
+import { theme } from '../utils';
 
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -19,18 +23,27 @@ const Login = ({ navigation }) => {
     const [isPasswordValid, setIsPasswordValid] = useState(true);
     const { login, loginLoading } = useAuth();
 
-    const handleSubmit = () => {
-        let emailReg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
-        let emailValid = emailReg.test(email);
-        if (emailValid) {
-            login(email, password);
+    const handleSubmit = async () => {
+        const contactsPermissionGranted = await RNSecureStorage.get(CONTACTS_PERM_GRANTED_KEY);
+        if (contactsPermissionGranted === "true") {
+            let emailReg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+            let emailValid = emailReg.test(email);
+            if (emailValid && password.length > 0) {
+                login(email, password);
+            }
+            else {
+                setIsEmailValid(emailValid);
+                setTimeout(() => {
+                    setIsEmailValid(true);
+                }, 4000);
+            }
         }
         else {
-            setIsEmailValid(emailValid);
-            setTimeout(() => {
-                setIsEmailValid(true);
-            }, 4000);
-        }
+            Snackbar.show({
+                text: 'Please allow contacts access in your app settings',
+                duration: Snackbar.LENGTH_SHORT,
+            });
+        } 
     };
     return (
         <View style={styles.container}>
@@ -108,7 +121,7 @@ const styles = StyleSheet.create({
         color: 'rgba(0,0,0,0.6)',
     },
     button: {
-        backgroundColor: "#5170ff",
+        backgroundColor: theme.primary,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,

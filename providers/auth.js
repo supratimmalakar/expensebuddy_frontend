@@ -1,8 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage'
+import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import { View, Text } from 'react-native';
 import Snackbar from 'react-native-snackbar';
+import { BASE_URL } from '../App';
+import Contacts from 'react-native-contacts';
+import { axiosInstance } from '../utils';
+import parsePhoneNumber from 'libphonenumber-js';
 
 const AuthContext = createContext(null);
 const { Provider } = AuthContext;
@@ -14,6 +18,7 @@ const useAuth = () => {
 };
 
 const AuthProvider = ({ children }) => {
+    const [unregisteredContacts, setUnregisteredContacts] = useState([])
     const [authState, setAuthState] = useState({
         accessToken: null,
         authenticated: null,
@@ -23,8 +28,16 @@ const AuthProvider = ({ children }) => {
     const [loginLoading, setLoginLoading] = useState(false);
 
     useEffect(() => {
-        loadStorageData();
-    }, []);
+        loadStorageData()
+        .then(res => {
+            if (authState.accessToken) {
+                updateContacts();
+            }
+        })
+        .catch(error => {
+            console.log(error);
+        })
+    }, [authState.accessToken]);
 
     const loadStorageData = async () => {
         try {
@@ -40,9 +53,48 @@ const AuthProvider = ({ children }) => {
         }
     };
 
+    const updateContacts = async () => {
+        try {
+            const contacts = await Contacts.getAll();
+            const parsedContacts = contacts.filter(contact => {
+                const unParsedPhoneNumber = contact?.phoneNumbers[0]?.number;
+                if (typeof (unParsedPhoneNumber) === 'string') {
+                    const phone_number = parsePhoneNumber(unParsedPhoneNumber, 'IN').nationalNumber;
+                    return phone_number.length === 10;
+                }
+                else { return false; }
+            })
+                .map(contact => {
+                    const phone_number = parsePhoneNumber(contact?.phoneNumbers[0]?.number, 'IN').nationalNumber;
+                    const parsedContact = {
+                        contact_name: contact.displayName,
+                        phone_number: '91' + phone_number,
+                    };
+                    return parsedContact;
+                });
+            const response = await axiosInstance.post('/api/user/set_contacts/', {
+                'contacts': parsedContacts,
+            });
+            const unregisteredContactsCache = parsedContacts.filter(contact => {
+                const isContactRegistered = response.data.buddies.some(buddy => (buddy.phone_number === contact.phone_number));
+                return !isContactRegistered;
+            });
+            setUnregisteredContacts([...unregisteredContactsCache]);
+            setAuthState(prev => {
+                return {
+                    ...prev,
+                    user : {...response.data},
+                }
+            })
+        }
+        catch (error) {
+            console.log(error);
+        }
+    };
+
     const login = (email, password) => {
-        setLoginLoading(true)
-        axios.post('http://localhost:8000/api/login/', {
+        setLoginLoading(true);
+        axios.post(`${BASE_URL}/api/login/`, {
             email,
             password,
         })
@@ -60,7 +112,6 @@ const AuthProvider = ({ children }) => {
                         setLoginLoading(false)
                     }, (err) => {
                         console.log(err);
-                        
                         setAuthStateLoading(false)
                     });
             })
@@ -96,14 +147,6 @@ const AuthProvider = ({ children }) => {
         return authState.accessToken;
     };
 
-    const getUser = () => {
-        return authState.user;
-    };
-
-    const isAuthenticated = () => {
-        return authState.authenticated;
-    };
-
     if (authStateLoading) {
         return (
             <View>
@@ -122,6 +165,7 @@ const AuthProvider = ({ children }) => {
                 login,
                 authStateLoading,
                 loginLoading,
+                unregisteredContacts,
             }}>
             {children}
         </Provider>

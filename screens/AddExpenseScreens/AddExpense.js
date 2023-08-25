@@ -6,16 +6,19 @@ import {
     TextInput,
     TouchableOpacity,
     Image,
-    Button,
+    Modal,
     Pressable,
     ImageBackground,
     Dimensions
 } from 'react-native';
 import { useAuth } from '../../providers/auth';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { SearchContactsModal } from '../../components';
+import { theme } from '../../utils';
 
 
 const AddExpense = ({ navigation }) => {
+    const [contactSearchModalVisible, setContactSearchModalVisible] = useState(false)
     const { authState } = useAuth();
     console.log(authState);
     return (
@@ -33,18 +36,21 @@ const AddExpense = ({ navigation }) => {
                     </View>
                     <View style={styles.addPeopleBar}>
                         <Text style={styles.addPeopleBarText}>With <Text style={{fontFamily : 'Montserrat_700'}}>you</Text> and:  </Text>
-                        <TouchableOpacity activeOpacity={0.4} style={styles.addPeopleBtn}><Image style={{width : 35, height : 35}} source={require('../../assets/add-circle.png')}/></TouchableOpacity>
-                        
+                        <TouchableOpacity onPress={() => setContactSearchModalVisible(true)} activeOpacity={0.4} style={styles.addPeopleBtn}><Image style={{width : 35, height : 35}} source={require('../../assets/add-circle.png')}/></TouchableOpacity>
+                        <SearchContactsModal visible={contactSearchModalVisible} onClose={() => setContactSearchModalVisible(false)}/>
                     </View>
                 </View>
             </ImageBackground>
         </View>
     );
-}
+};
+
+const screenWidth = Dimensions.get('window').width;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        width: Dimensions.get('window').width,
+        width: screenWidth,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -53,8 +59,17 @@ const styles = StyleSheet.create({
         justifyContent: 'start',
         alignItems: 'center',
     },
+    input: {
+        height: 50,
+        width: screenWidth,
+        borderWidth: 0,
+        borderBottomWidth: 1,
+        borderRadius: 10,
+        padding: 10,
+        marginTop: 20
+    },
     button: {
-        backgroundColor: "#5170ff",
+        backgroundColor: theme.primary,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 12,
