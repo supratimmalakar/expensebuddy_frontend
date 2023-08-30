@@ -7,7 +7,6 @@ function StackContainer() {
     const { getAccessToken } = useAuth();
     return (
         <NavigationContainer>
-            {/* find out why getAccessToken() works and not authState */}
             {getAccessToken() ? <AppContainer /> : <AuthenticationContainer />}
         </NavigationContainer>
     );

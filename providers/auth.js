@@ -32,6 +32,7 @@ const AuthProvider = ({ children }) => {
         .then(res => {
             if (authState.accessToken) {
                 updateContacts();
+                getUser();
             }
         })
         .catch(error => {
@@ -50,6 +51,19 @@ const AuthProvider = ({ children }) => {
         }
         finally {
             setAuthStateLoading(false);
+        }
+    };
+
+    const getUser = async () => {
+        try {
+            const response = await axiosInstance.get('/api/user/');
+            setAuthState(prev => ({
+                ...prev,
+                user : response.data,
+            }));
+        }
+        catch (err) {
+            console.log(err);
         }
     };
 

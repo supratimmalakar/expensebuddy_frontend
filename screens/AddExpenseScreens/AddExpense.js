@@ -3,26 +3,23 @@ import {
     StyleSheet,
     Text,
     View,
-    TextInput,
     TouchableOpacity,
     Image,
-    Modal,
     Pressable,
     ImageBackground,
     Dimensions
 } from 'react-native';
 import { useAuth } from '../../providers/auth';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ContactTag, SearchContactsModal, AddExpenseForm } from '../../components';
 import { theme } from '../../utils';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 
 const AddExpense = ({ navigation }) => {
+    const dispatch = useDispatch();
     const [contactSearchModalVisible, setContactSearchModalVisible] = useState(false)
-    const { authState } = useAuth();
+    const { authState : {user} } = useAuth();
     const { contacts: selectedContacts } = useSelector(state => state.expense)
-    console.log(authState);
     return (
         <View style={styles.container}>
             <ImageBackground style={{ flex: 1, width: Dimensions.get('window').width }} source={require('../../assets/layered-waves-2.png')}>
@@ -38,7 +35,7 @@ const AddExpense = ({ navigation }) => {
                     </View>
                     <View style={styles.addPeopleBar}>
                         <Text style={styles.addPeopleBarText}>With <Text style={{ fontFamily: 'Montserrat_700' }}>you</Text> and:  </Text>
-                        {selectedContacts.length > 0 && selectedContacts.map((contact, index) => <ContactTag key={index} contact={contact} />)}
+                        {selectedContacts.length > 0 && selectedContacts.map((contact, index) => <ContactTag key={contact.phone_number} contact={contact} />)}
                         <TouchableOpacity onPress={() => setContactSearchModalVisible(true)} activeOpacity={0.4} style={styles.addPeopleBtn}><Image style={{ width: 35, height: 35 }} source={require('../../assets/add-circle.png')} /></TouchableOpacity>
                     </View>
                     <View style={{flex : 1, justifyContent : 'flex-start', alignItems : 'center', marginTop : 100}}>

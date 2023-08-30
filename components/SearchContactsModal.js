@@ -13,13 +13,13 @@ const screenWidth = Dimensions.get('window').width;
 function SearchContactsModal({ visible, onClose }) {
     const { authState, unregisteredContacts } = useAuth();
     const { user } = authState;
-    const [regResults, setRegResults] = useState([]);
+    const [regResults, setRegResults] = useState([...user.buddies]);
     const [unregResults, setUnregResults] = useState([]);
     const [searchText, setSearchText] = useState('');
     const dispatch = useDispatch();
     const {contacts : selectedContacts} = useSelector(state => state.expense);
 
-    const searchFilterFunction = (text, data, setData) => {
+    const searchFilterFunction = (text, data, setData, showDefaultListonEmpty) => {
         if (text) {
             const newData = data.filter(item => {
                 const itemData = item.contact_name ? item.contact_name.toUpperCase() : ''.toUpperCase();
@@ -33,7 +33,12 @@ function SearchContactsModal({ visible, onClose }) {
             });
             setData(newData);
         } else {
-            setData([]);
+            if (showDefaultListonEmpty) {
+                setData([...data]);
+            }
+            else {
+                setData([]);
+            }
         }
     };
     return (
@@ -47,7 +52,7 @@ function SearchContactsModal({ visible, onClose }) {
             <View style={styles.headerContainer}>
                 <TextInput value={searchText} onChangeText={(text) => {
                     setSearchText(text);
-                    searchFilterFunction(text, user.buddies, setRegResults);
+                    searchFilterFunction(text, user.buddies, setRegResults, true);
                     searchFilterFunction(text, unregisteredContacts, setUnregResults);
                 }} placeholder="Search Contacts" style={styles.input} />
             </View>
@@ -56,10 +61,13 @@ function SearchContactsModal({ visible, onClose }) {
                     <View style={styles.contactTagsContainer}>
                         {selectedContacts.map((contact, index) => {
                             return (
-                                <ContactTag key={index} contact={contact} />
+                                <ContactTag key={contact.phone_number} contact={contact} />
                             );
                         })}
                     </View>}
+                    <>
+                    <Text style={{ fontFamily: 'Montserrat_600', paddingHorizontal: 10, marginVertical: 10 }}>Friends on ExpenseBuddy</Text>
+                    </>
                 <FlatList
                     data={regResults}
                     ItemSeparatorComponent={() => <View style={{ backgroundColor: 'rgba(0,0,0,0.1)', marginHorizontal: 10, width: screenWidth - 20, height: 1 }} />}
@@ -181,6 +189,7 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         borderBottomWidth: 1,
         padding: 10,
+        paddingLeft: 0,
         paddingBottom: 5,
         fontFamily: 'Montserrat_500',
         borderColor: 'gray',

@@ -42,10 +42,10 @@ export default function App() {
       });
   };
   return (
-    <Provider store={store}>
-      <AuthProvider>
+    <AuthProvider>
+      <Provider store={store}>
         <StackContainer />
-      </AuthProvider>
-    </Provider>
+      </Provider>
+    </AuthProvider>
   );
 }

@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { useAuth } from '../providers/auth';
 
 export const expenseSlice = createSlice({
     name: 'expense',
@@ -13,6 +14,9 @@ export const expenseSlice = createSlice({
             },
         },
         currency: { name: 'Indian Rupee', code: 'INR' },
+        is_single_payer : true,
+        single_payer : null ,
+        payers: [],
     },
     reducers: {
         addContact: (state, action) => {
@@ -35,9 +39,30 @@ export const expenseSlice = createSlice({
         setCurrency: (state, action) => {
             state.currency = action.payload;
         },
+        setIsSinglePayer : (state, action) => {
+            state.is_single_payer = action.payload;
+        },
+        setSinglePayer : (state, action) => {
+            state.is_single_payer = true;
+            state.single_payer = action.payload;
+        },
+        addPayer: (state, action) => {
+            state.payers = [...state.payers, action.payload];
+        },
+        removePayer: (state, action) => {
+            const toDeleteIndex = state.payers.map(payer => payer.phone_number).indexOf(action.payload.phone_number);
+            if (toDeleteIndex > -1) {
+                var copy = state.payers;
+                copy.splice(toDeleteIndex, 1);
+                state.payers = [...copy];
+            }
+            else {
+                state.payers = state.payers;
+            }
+        },
     },
 });
 
-export const { addContact, removeContact, setCategory, setCurrency } = expenseSlice.actions;
+export const { addContact, removeContact, setCategory, setCurrency, addPayer, removePayer, setIsSinglePayer, setSinglePayer } = expenseSlice.actions;
 
 export default expenseSlice.reducer;
