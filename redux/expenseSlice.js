@@ -17,6 +17,7 @@ export const expenseSlice = createSlice({
         is_single_payer : true,
         single_payer : null ,
         payers: [],
+        amount : null,
     },
     reducers: {
         addContact: (state, action) => {
@@ -41,6 +42,12 @@ export const expenseSlice = createSlice({
         },
         setIsSinglePayer : (state, action) => {
             state.is_single_payer = action.payload;
+            if (!action.payload)  {
+                state.payers = state.contacts.map(contact => ({
+                    contact : contact,
+                    amount_paid : null,
+                }));
+            }
         },
         setSinglePayer : (state, action) => {
             state.is_single_payer = true;
@@ -60,9 +67,18 @@ export const expenseSlice = createSlice({
                 state.payers = state.payers;
             }
         },
+        setPayerAmount : (state, action) => {
+            const {contact, amount} = action.payload;
+            console.log(amount);
+            const indexOfContact = state.payers.map(item => item.contact.contact_user_id).indexOf(contact.contact_user_id);
+            if (indexOfContact > -1) {state.payers[indexOfContact].amount_paid = amount;}
+        },
+        setAmount : (state, action) => {
+            state.amount = action.payload;
+        },
     },
 });
 
-export const { addContact, removeContact, setCategory, setCurrency, addPayer, removePayer, setIsSinglePayer, setSinglePayer } = expenseSlice.actions;
+export const { addContact, removeContact, setCategory, setCurrency, addPayer, removePayer, setIsSinglePayer, setAmount, setSinglePayer, setPayerAmount } = expenseSlice.actions;
 
 export default expenseSlice.reducer;

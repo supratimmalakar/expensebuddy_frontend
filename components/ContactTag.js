@@ -4,10 +4,13 @@ import ContactDp from './ContactDp';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from 'react-redux';
 import { removeContact } from '../redux/expenseSlice';
+import { useAuth } from '../providers/auth';
 
 
 function ContactTag({ contact }) {
+    const {authState : {user}} = useAuth();
     const dispatch = useDispatch();
+    if (user.id === contact.contact_user_id) return null;
     return (
         <View style={styles.contactTags}>
             <ContactDp contact={contact} size={16} />
