@@ -56,7 +56,6 @@ const Signup = ({ navigation }) => {
                 phone_number : phoneNo.trim(),
             })
                 .then(response => {
-                    console.log(response);
                     Snackbar.show({
                         text: 'Signed up successfully. Redirecting to Login page',
                         duration: Snackbar.LENGTH_SHORT,
@@ -120,7 +119,7 @@ const Signup = ({ navigation }) => {
                         onChangeText={(text) => setFirstName(text)}
                         style={{
                             ...styles.input,
-                            borderColor: isFirstNameValid ? 'gray' : 'red'
+                            borderColor: isFirstNameValid ? 'gray' : theme.error,
                         }}
                         placeholder="First Name" />
                     {!isFirstNameValid && <Text style={styles.errorText}>Enter a valid first name.</Text>}
@@ -130,7 +129,7 @@ const Signup = ({ navigation }) => {
                         onChangeText={(text) => setLastName(text)}
                         style={{
                             ...styles.input,
-                            borderColor: isLastNameValid ? 'gray' : 'red'
+                            borderColor: isLastNameValid ? 'gray' : theme.error,
                         }}
                         placeholder="Last Name" />
                     {!isLastNameValid && <Text style={styles.errorText}>Enter a valid last name.</Text>}
@@ -141,7 +140,7 @@ const Signup = ({ navigation }) => {
                         keyboardType="email-address"
                         style={{
                             ...styles.input,
-                            borderColor: isEmailValid ? 'gray' : 'red'
+                            borderColor: isEmailValid ? 'gray' : theme.error,
                         }}
                         placeholder="Email" />
                     {!isEmailValid && <Text style={styles.errorText}>Enter a valid email</Text>}
@@ -153,7 +152,7 @@ const Signup = ({ navigation }) => {
                         secureTextEntry={true}
                         style={{
                             ...styles.input,
-                            borderColor: isPasswordValid ? 'gray' : 'red',
+                            borderColor: isPasswordValid ? 'gray' : theme.error,
                         }}
                         placeholder="Password" />
                     {!isPasswordValid && <Text style={styles.errorText}>Please enter a valid password</Text>}
@@ -166,7 +165,6 @@ const Signup = ({ navigation }) => {
                         defaultCode="IN"
                         onChangeFormattedText={(text) => {
                             setPhoneNo(text);
-                            console.log(text);
                         }}
                         textInputStyle={{ color: 'black' }}
                         codeTextStyle={styles.codeTextStyle}
@@ -220,7 +218,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontFamily: 'Montserrat_200',
         fontSize: 10,
-        color: 'red',
+        color: theme.error,
     },
     subContainer: {
         flex: 1,

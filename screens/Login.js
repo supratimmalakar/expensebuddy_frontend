@@ -58,7 +58,7 @@ const Login = ({ navigation }) => {
                         keyboardType="email-address"
                         style={{
                             ...styles.input,
-                            borderColor: isEmailValid ? 'gray' : 'red'
+                            borderColor: isEmailValid ? 'gray' : theme.error
                         }}
                         placeholder="Email" />
                     {!isEmailValid && <Text style={styles.errorText}>Enter a valid email</Text>}
@@ -70,7 +70,7 @@ const Login = ({ navigation }) => {
                         secureTextEntry={true}
                         style={{
                             ...styles.input,
-                            borderColor: isPasswordValid ? 'gray' : 'red',
+                            borderColor: isPasswordValid ? 'gray' : theme.error,
                         }}
                         placeholder="Password" />
                     <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={handleSubmit}>
@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontFamily: 'Montserrat_200',
         fontSize: 10,
-        color: 'red'
+        color: theme.error,
     },
     subContainer: {
         flex: 1,
         justifyContent: 'start',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     header: {
         marginBottom: 40,

@@ -7,7 +7,8 @@ import {
     Image,
     Pressable,
     ImageBackground,
-    Dimensions
+    Dimensions,
+    ScrollView,
 } from 'react-native';
 import { useAuth } from '../../providers/auth';
 import { ContactTag, SearchContactsModal, AddExpenseForm } from '../../components';
@@ -21,7 +22,7 @@ const AddExpense = ({ navigation }) => {
     const { authState : {user} } = useAuth();
     const { contacts: selectedContacts } = useSelector(state => state.expense)
     return (
-        <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}>
             <ImageBackground style={{ flex: 1, width: Dimensions.get('window').width }} source={require('../../assets/layered-waves-2.png')}>
                 <View style={styles.subContainer}>
                     <View style={styles.headerBar}>
@@ -38,13 +39,13 @@ const AddExpense = ({ navigation }) => {
                         {selectedContacts.length > 0 && selectedContacts.map((contact, index) => <ContactTag key={contact.phone_number} contact={contact} />)}
                         <TouchableOpacity onPress={() => setContactSearchModalVisible(true)} activeOpacity={0.4} style={styles.addPeopleBtn}><Image style={{ width: 35, height: 35 }} source={require('../../assets/add-circle.png')} /></TouchableOpacity>
                     </View>
-                    <View style={{flex : 1, justifyContent : 'flex-start', alignItems : 'center', marginTop : 100}}>
+                    <View style={{flex : 1, justifyContent : 'center', alignItems : 'center'}}>
                         <AddExpenseForm />
                     </View>
                 </View>
             </ImageBackground>
             <SearchContactsModal visible={contactSearchModalVisible} onClose={() => setContactSearchModalVisible(false)} />
-        </View>
+        </ScrollView>
     );
 };
 

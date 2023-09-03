@@ -17,7 +17,6 @@ import { theme } from '../utils';
 
 const Home = ({ navigation }) => {
     const {authState} = useAuth();
-    console.log(authState);
     return (
         <View style={styles.container}>
             <ImageBackground style={{ flex: 1, width: Dimensions.get('window').width }} source={require('../assets/layered-waves-2.png')}>

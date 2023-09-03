@@ -9,9 +9,10 @@ import SplitOptionsModal from './SplitOptionsModal';
 import { useAuth } from '../providers/auth';
 import { addContact, setSinglePayer } from '../redux/expenseSlice';
 import { setAmount as setStoreAmount } from '../redux/expenseSlice';
+import { get_user_obj } from '../utils';
 
 function AddExpenseForm() {
-    const { category, currency, payers, is_single_payer, single_payer, amount : storeAmount, contacts } = useSelector(state => state.expense);
+    const { category, currency, payers, is_single_payer, single_payer, amount: storeAmount, contacts, split_type } = useSelector(state => state.expense);
     const [categoryVisible, setCategoryVisible] = useState(false);
     const [currencyVisible, setCurrencyVisible] = useState(false);
     const [choosePayerVisible, setChoosePayerVisible] = useState(false);
@@ -22,17 +23,10 @@ function AddExpenseForm() {
     const { authState: { user } } = useAuth();
     // const [amtError,setAmtError] = useState(false);
     const dispatch = useDispatch();
-    const user_contact_obj = {
-        contact_name: `${user.first_name} ${user.last_name} (you)`,
-        phone_number: user.phone_number,
-        is_user: true,
-        contact_user_id: user.id,
-    };
+    const user_contact_obj = get_user_obj(user);
     useEffect(() => {
         dispatch(setSinglePayer(user_contact_obj));
-        if (!contacts.map(contact => contact.contact_user_id).includes(user.id)) {
-            dispatch(addContact(user_contact_obj));
-        }
+        dispatch(addContact(user_contact_obj));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -49,6 +43,22 @@ function AddExpenseForm() {
             dispatch(setStoreAmount(null));
             setAmtErr(true);
         }
+    };
+
+    const handleModalOnPress = (cb) => {
+        return () => {
+            if (storeAmount && contacts.length > 0) {
+                cb();
+            }
+            else {
+                if (!storeAmount) {
+                    Alert.alert("Error", "Please Enter a valid Amount")
+                }
+                else if (contacts.length <= 0) {
+                    Alert.alert("Error", "Please select contacts")
+                }
+            }
+        };
     };
 
     return (
@@ -76,23 +86,11 @@ function AddExpenseForm() {
                     style={styles.input}
                     placeholder='Enter Amount' />
             </View>
-            {amtErr && <Text style={{color : 'red', fontFamily : 'Montserrat_400'}}>Enter a valid amount</Text>}
+            {amtErr && <Text style={{ color: 'red', fontFamily: 'Montserrat_400' }}>Enter a valid amount</Text>}
             <View style={styles.splitBar}>
                 <Text style={styles.splitText}>Paid by </Text>
                 <Pressable
-                    onPress={() => {
-                        if (storeAmount && contacts.length > 0) {
-                            setChoosePayerVisible(true);
-                        }
-                        else {
-                            if (!storeAmount) {
-                                Alert.alert("Please Enter a valid Amount")
-                            }
-                            else if (contacts.length <=0) {
-                                Alert.alert("Please select contacts")
-                            }
-                        }
-                    }}
+                    onPress={handleModalOnPress(() => setChoosePayerVisible(true))}
                     style={styles.splitBtn}>
                     <Text style={styles.splitText}>
                         {is_single_payer ? single_payer?.contact_user_id === user.id ? 'you' : single_payer?.contact_name : `${payers.filter(payer => payer.amount_paid).length} people`}
@@ -100,10 +98,10 @@ function AddExpenseForm() {
                 </Pressable>
                 <Text style={styles.splitText}> and split </Text>
                 <Pressable
-                    onPress={() => setSplitOptionsVisible(true)}
+                    onPress={handleModalOnPress(() => setSplitOptionsVisible(true))}
                     style={styles.splitBtn}>
                     <Text style={styles.splitText}>
-                        equally
+                        {split_type === 'EQUALLY' ? 'equally' : 'unequally'}
                     </Text>
                 </Pressable>
             </View>

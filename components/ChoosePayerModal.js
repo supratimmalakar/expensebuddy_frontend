@@ -12,11 +12,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const screenWidth = Dimensions.get('window').width;
 
 const PayerSelectCard = ({ contact, onSelect, isChecked }) => {
+    if (isChecked) console.log(contact)
     return (
         <Pressable onPress={onSelect} style={[styles.payerSelectCard, { justifyContent: 'space-between' }]} key={contact.phone_number}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                 <ContactDp contact={contact} />
-                <Text style={{ fontFamily: 'Montserrat_500', color : 'black' }}>{contact.contact_name}</Text>
+                <Text style={{ fontFamily: 'Montserrat_500', color: 'black' }}>{contact.contact_name}</Text>
             </View>
 
             {isChecked && <Ionicons name="checkmark-outline" size={25} color={theme.success} />}
@@ -26,11 +27,11 @@ const PayerSelectCard = ({ contact, onSelect, isChecked }) => {
 
 const MultiplePayersCard = ({ contact, currencyCode }) => {
     const { payers } = useSelector(state => state.expense);
-    const [amount, setAmount] = useState(payers[payers.map(payer => payer.contact.contact_user_id).indexOf(contact.contact_user_id)]?.amount_paid?.toString() || '');
+    const index = !(contact.unregistered) ? payers.map(payer => payer.contact.contact_user_id).indexOf(contact.contact_user_id) : payers.map(payer => payer.contact.phone_number).indexOf(contact.phone_number);
+    const [amount, setAmount] = useState(payers[index]?.amount_paid?.toString() || '');
     const [amtErr, setAmtErr] = useState(false);
     const dispatch = useDispatch();
     const handleAmountChange = (text) => {
-        console.log({ payers })
         const numericRegex = /^\d+(\.\d+)?$/;
         setAmount(text);
         if (numericRegex.test(text)) {
@@ -73,11 +74,11 @@ function ChoosePayerModal({ visible, onClose, user_contact_obj }) {
                 <Pressable onPress={() => {
                     if (!is_single_payer) {
                         if (amountLeft !== 0) {
-                            Alert.alert(`All amounts don't add upto ${amount} ${currency.code}`);
+                            Alert.alert("Error",`All amounts don't add upto ${amount} ${currency.code}`);
                             return;
                         }
                         if (payers.filter(payer => payer.amount_paid).length === 1) {
-                            Alert.alert(`Please add multiple payers`);
+                            Alert.alert("Error",`Please add multiple payers`);
                             return;
                         }
                     }
@@ -91,31 +92,35 @@ function ChoosePayerModal({ visible, onClose, user_contact_obj }) {
                     <Text style={styles.subHeaderText}>Single Payer</Text>
                     <Switch thumbColor={is_single_payer ? theme.primary : '#f4f3f4'} trackColor={{ false: '#767577', true: '#c3cdfa' }} value={is_single_payer} onValueChange={() => dispatch(setIsSinglePayer(!is_single_payer))} />
                 </View>
-                {contacts.length > 0 && is_single_payer &&
-                    <>
-                        {contacts.map(contact => {
-                            return <PayerSelectCard isChecked={single_payer.contact_user_id === contact.contact_user_id} key={contact.phone_number} contact={contact} onSelect={() => { dispatch(setSinglePayer(contact)); onClose(); }} />;
-                        })}
-                    </>
-                }
-
+                {is_single_payer &&
+                    <FlatList
+                        data={contacts}
+                        renderItem={({ item: contact, index }) => {
+                            return <PayerSelectCard
+                                isChecked={
+                                    (!contact.unregistered) ?
+                                        single_payer.contact_user_id === contact.contact_user_id
+                                        :
+                                        single_payer.phone_number === contact.phone_number} key={contact.phone_number}
+                                contact={contact}
+                                onSelect={() => { dispatch(setSinglePayer(contact)); onClose(); }} />;
+                        }} />}
             </View>
-            <View style={{ paddingHorizontal: 10}}>
+            <View style={{ paddingHorizontal: 10 }}>
                 <View style={styles.switchBar}>
                     <Text style={styles.subHeaderText}>Multiple Payers</Text>
                     <Switch thumbColor={!is_single_payer ? theme.primary : '#f4f3f4'} trackColor={{ false: '#767577', true: '#c3cdfa' }} value={!is_single_payer} onValueChange={() => dispatch(setIsSinglePayer(!is_single_payer))} />
                 </View>
-                {contacts.length > 0 && !is_single_payer &&
-                    <>
-                        {contacts.map((contact, index) => {
-                            return <MultiplePayersCard key={contact.contact_user_id} currencyCode={currency.code} contact={contact} />
-                        })}
-                        <View style={styles.bottomBar}>
-                            <Text style={[styles.bottomText, {color : 'black'}]}>{totalAmount} out {amount} {currency.code}</Text>
-                            <Text style={[styles.bottomText, {color : amountLeft < 0 ? theme.error : amountLeft === 0 ? theme.success : 'gray'}]}>{amountLeft} {currency.code} left</Text>
-                        </View>
-                    </>
-                }
+                {!is_single_payer &&
+                    <FlatList
+                        data={contacts}
+                        ListFooterComponent={<View style={styles.bottomBar}>
+                            <Text style={[styles.bottomText, { color: 'black' }]}>{totalAmount} out of {amount} {currency.code}</Text>
+                            <Text style={[styles.bottomText, { color: amountLeft < 0 ? theme.error : amountLeft === 0 ? theme.success : 'gray' }]}>{amountLeft} {currency.code} left</Text>
+                        </View>}
+                        renderItem={({ item: contact, index }) => {
+                            return <MultiplePayersCard key={contact.contact_user_id} currencyCode={currency.code} contact={contact} />;
+                        }} />}
 
             </View>
         </Modal>
@@ -175,5 +180,5 @@ const styles = StyleSheet.create({
         flex: 5,
         fontFamily: 'Montserrat_500',
         color: 'black',
-    }
+    },
 })

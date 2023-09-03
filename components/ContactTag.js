@@ -3,8 +3,9 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import ContactDp from './ContactDp';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from 'react-redux';
-import { removeContact } from '../redux/expenseSlice';
+import { removeContact, setEqualSplit, setIsSinglePayer, setSinglePayer, setSplitType } from '../redux/expenseSlice';
 import { useAuth } from '../providers/auth';
+import { get_user_obj } from '../utils';
 
 
 function ContactTag({ contact }) {
@@ -15,7 +16,13 @@ function ContactTag({ contact }) {
         <View style={styles.contactTags}>
             <ContactDp contact={contact} size={16} />
             <Text style={styles.contactTagText}>{contact.contact_name}</Text>
-            <Pressable onPress={() => dispatch(removeContact(contact))}>
+            <Pressable onPress={() => {
+                dispatch(setSplitType('EQUALLY'));
+                dispatch(setEqualSplit({ contact: get_user_obj(user), is_in_equal_split : true}));
+                dispatch(setIsSinglePayer(true));
+                dispatch(setSinglePayer(get_user_obj(user)));
+                dispatch(removeContact(contact));
+            }}>
                 <Ionicons color="rgba(0,0,0,0.7)" name="close-sharp" size={25} />
             </Pressable>
         </View>
